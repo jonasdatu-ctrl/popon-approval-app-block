@@ -1,0 +1,17 @@
+{
+  "name": "popon-approval-app-block",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "shopify app dev",
+    "build": "shopify app build",
+    "deploy": "shopify app deploy",
+    "info": "shopify app info"
+  },
+  "workspaces": [
+    "extensions/*"
+  ],
+  "devDependencies": {
+    "@shopify/cli": "latest"
+  }
+}

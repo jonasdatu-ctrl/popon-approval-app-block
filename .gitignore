@@ -1,0 +1,7 @@
+node_modules/
+.shopify/
+dist/
+build/
+.env
+.env.*
+!.env.example

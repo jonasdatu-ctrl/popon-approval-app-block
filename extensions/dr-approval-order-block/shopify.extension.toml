@@ -1,0 +1,11 @@
+api_version = "2026-04"
+
+[[extensions]]
+name = "t:name"
+handle = "dr-approval-order-block"
+uid = "555830fd-6fbf-4084-bfaa-58535db58f94"
+type = "ui_extension"
+
+[[extensions.targeting]]
+module = "./src/BlockExtension.jsx"
+target = "admin.order-details.block.render"

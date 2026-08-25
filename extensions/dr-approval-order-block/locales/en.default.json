@@ -1,0 +1,8 @@
+{
+  "name": "Dr Approval",
+  "approve-button": "Approve",
+  "reject-button": "Reject",
+  "loading": "Loading approval status…",
+  "error-loading": "Unable to load approval status for this order.",
+  "error-submitting": "Something went wrong recording the decision. Please try again."
+}

@@ -1,0 +1,19 @@
+# This file stores configuration for the Shopify app.
+# Learn more: https://shopify.dev/docs/apps/tools/cli/configuration
+#
+# client_id and application_url below are placeholders. Run
+# `shopify app config link` against your real Partner app to bind this
+# file to it (it rewrites client_id/application_url in place without
+# touching the rest of this file).
+
+name = "popon-approval-app-block"
+client_id = "REPLACE_WITH_YOUR_APP_CLIENT_ID"
+application_url = "https://REPLACE_WITH_YOUR_APP_URL"
+embedded = true
+
+[access_scopes]
+# read_orders is required to read custom.smile_photo / custom.dr_approval_decision
+# and the order itself; write_orders is required to write the decision back via
+# metafieldsSet. These are independent scopes for Orders - write_orders alone
+# does not grant read access.
+scopes = "read_orders,write_orders"
