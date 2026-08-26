@@ -1,14 +1,12 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-name = "popon-order-admin-approval"
-client_id = "64309a97c61cab0c1798892fcd68ff3d"
+client_id = "ad12f9115befd381c6da0253015289c5"
 application_url = "https://shopify.dev/apps/default-app-home"
 embedded = true
+name = "popon-order-admin-approval"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-# read_orders: read the order and its custom.smile_photo / custom.dr_approval_decision metafields
-# write_orders: write the decision back via metafieldsSet (independent scope from read_orders on Orders)
 scopes = "read_orders,write_orders"
 
 [auth]
@@ -18,5 +16,4 @@ redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
 api_version = "2026-10"
 
 [build]
-include_config_on_deploy = true
 automatically_update_urls_on_dev = true
