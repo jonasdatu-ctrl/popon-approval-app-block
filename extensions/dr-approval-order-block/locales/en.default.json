@@ -1,8 +1,13 @@
 {
   "name": "Dr Approval",
+  "smile-photos-heading": "Smile photos",
+  "smile-photos-empty": "This customer hasn't submitted their smile photos yet.",
+  "decision-heading": "Decision",
+  "decision-prompt": "Review the smile photos above and record a decision.",
   "approve-button": "Approve",
   "reject-button": "Reject",
   "loading": "Loading approval status…",
+  "smile-photo-alt": "Smile photo",
   "error-loading": "Unable to load approval status for this order.",
   "error-submitting": "Something went wrong recording the decision. Please try again."
 }

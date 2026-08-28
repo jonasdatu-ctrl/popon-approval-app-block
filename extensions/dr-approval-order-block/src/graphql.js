@@ -16,32 +16,49 @@ async function graphqlRequest(query, variables) {
   return body.data;
 }
 
-// Reads custom.smile_photo (presence only, via references) and
-// custom.dr_approval_decision in one round trip.
+// Reads custom.dr_approval_decision (order-level) and the linked customer's
+// custom.smile_photos (customer-level image list) in one round trip. Block
+// visibility and the photo preview are both driven by the customer's
+// smile_photos - there is no separate order-level gating field.
 export async function fetchOrderApprovalState(orderId) {
   const data = await graphqlRequest(
     `#graphql
     query DrApprovalOrderState($id: ID!) {
       order(id: $id) {
-        smilePhoto: metafield(namespace: "custom", key: "smile_photo") {
-          references(first: 1) {
-            edges {
-              cursor
-            }
-          }
-        }
         decision: metafield(namespace: "custom", key: "dr_approval_decision") {
           value
+        }
+        customer {
+          smilePhotos: metafield(namespace: "custom", key: "smile_photos") {
+            references(first: 10) {
+              edges {
+                node {
+                  ... on MediaImage {
+                    image {
+                      url
+                      altText
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }`,
     { id: orderId }
   );
 
-  const photoEdges = data?.order?.smilePhoto?.references?.edges ?? [];
+  const customerPhotoEdges =
+    data?.order?.customer?.smilePhotos?.references?.edges ?? [];
+  const customerSmilePhotos = customerPhotoEdges
+    .map((edge) => edge?.node?.image)
+    .filter(Boolean)
+    .map((image) => ({ url: image.url, alt: image.altText ?? null }));
+
   return {
-    hasSmilePhoto: photoEdges.length > 0,
     decision: data?.order?.decision?.value ?? null,
+    customerSmilePhotos,
   };
 }
 

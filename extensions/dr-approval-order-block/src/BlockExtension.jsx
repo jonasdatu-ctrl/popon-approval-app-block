@@ -16,8 +16,8 @@ export default async () => {
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [hasSmilePhoto, setHasSmilePhoto] = useState(false);
     const [decision, setDecision] = useState(/** @type {string | null} */ (null));
+    const [customerSmilePhotos, setCustomerSmilePhotos] = useState(/** @type {{url: string, alt: string | null}[]} */ ([]));
     const [errorMessage, setErrorMessage] = useState(/** @type {string | null} */ (null));
 
     useEffect(() => {
@@ -29,8 +29,8 @@ export default async () => {
         try {
           const state = await fetchOrderApprovalState(orderId);
           if (cancelled) return;
-          setHasSmilePhoto(state.hasSmilePhoto);
           setDecision(state.decision);
+          setCustomerSmilePhotos(state.customerSmilePhotos);
         } catch (error) {
           if (!cancelled) setErrorMessage(i18n.translate("error-loading"));
         } finally {
@@ -53,6 +53,7 @@ export default async () => {
           await setApprovalDecision(orderId, sentence);
           setDecision(sentence);
         } catch (error) {
+          console.error("[dr-approval-order-block] recordDecision failed:", error);
           setErrorMessage(i18n.translate("error-submitting"));
         } finally {
           setSubmitting(false);
@@ -69,34 +70,59 @@ export default async () => {
       );
     }
 
-    if (!hasSmilePhoto) {
-      return null;
-    }
+    const hasPhotos = customerSmilePhotos.length > 0;
 
     return (
       <s-admin-block heading={i18n.translate("name")}>
         <s-stack direction="block" gap="base">
           {errorMessage ? <s-banner tone="critical">{errorMessage}</s-banner> : null}
-          {decision ? (
-            <s-banner tone={resolveDecisionTone(decision)}>{decision}</s-banner>
-          ) : (
-            <s-stack direction="inline" gap="base">
-              <s-button
-                tone="success"
-                disabled={submitting}
-                onClick={() => recordDecision("Approved")}
-              >
-                {i18n.translate("approve-button")}
-              </s-button>
-              <s-button
-                tone="critical"
-                disabled={submitting}
-                onClick={() => recordDecision("Rejected")}
-              >
-                {i18n.translate("reject-button")}
-              </s-button>
+
+          <s-stack direction="block" gap="small">
+            <s-heading>{i18n.translate("smile-photos-heading")}</s-heading>
+            {hasPhotos ? (
+              <s-stack direction="inline" gap="base">
+                {customerSmilePhotos.map((photo) => (
+                  <s-thumbnail
+                    key={photo.url}
+                    src={photo.url}
+                    alt={photo.alt ?? i18n.translate("smile-photo-alt")}
+                    size="large"
+                  />
+                ))}
+              </s-stack>
+            ) : (
+              <s-banner tone="info">{i18n.translate("smile-photos-empty")}</s-banner>
+            )}
+          </s-stack>
+
+          {hasPhotos ? (
+            <s-stack direction="block" gap="small">
+              <s-heading>{i18n.translate("decision-heading")}</s-heading>
+              {decision ? (
+                <s-banner tone={resolveDecisionTone(decision)}>{decision}</s-banner>
+              ) : (
+                <s-stack direction="block" gap="base">
+                  <s-paragraph>{i18n.translate("decision-prompt")}</s-paragraph>
+                  <s-stack direction="inline" gap="base">
+                    <s-button
+                      tone="success"
+                      disabled={submitting}
+                      onClick={() => recordDecision("Approved")}
+                    >
+                      {i18n.translate("approve-button")}
+                    </s-button>
+                    <s-button
+                      tone="critical"
+                      disabled={submitting}
+                      onClick={() => recordDecision("Rejected")}
+                    >
+                      {i18n.translate("reject-button")}
+                    </s-button>
+                  </s-stack>
+                </s-stack>
+              )}
             </s-stack>
-          )}
+          ) : null}
         </s-stack>
       </s-admin-block>
     );

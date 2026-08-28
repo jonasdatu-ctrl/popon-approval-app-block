@@ -15,5 +15,6 @@ embedded = true
 # read_orders is required to read custom.smile_photo / custom.dr_approval_decision
 # and the order itself; write_orders is required to write the decision back via
 # metafieldsSet. These are independent scopes for Orders - write_orders alone
-# does not grant read access.
-scopes = "read_orders,write_orders"
+# does not grant read access. read_customers is required to reach order.customer
+# (and its custom.smile_photos metafield) at all.
+scopes = "read_orders,write_orders,read_customers"
