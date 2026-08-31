@@ -32,6 +32,7 @@ export default async () => {
           setHasSmilePhoto(state.hasSmilePhoto);
           setDecision(state.decision);
         } catch (error) {
+          console.error("[dr-approval-order-block] loadApprovalState failed:", error);
           if (!cancelled) setErrorMessage(i18n.translate("error-loading"));
         } finally {
           if (!cancelled) setLoading(false);
@@ -69,6 +70,14 @@ export default async () => {
       );
     }
 
+    if (errorMessage) {
+      return (
+        <s-admin-block heading={i18n.translate("name")}>
+          <s-banner tone="critical">{errorMessage}</s-banner>
+        </s-admin-block>
+      );
+    }
+
     if (!hasSmilePhoto) {
       return null;
     }
@@ -76,7 +85,6 @@ export default async () => {
     return (
       <s-admin-block heading={i18n.translate("name")}>
         <s-stack direction="block" gap="base">
-          {errorMessage ? <s-banner tone="critical">{errorMessage}</s-banner> : null}
           {decision ? (
             <s-banner tone={resolveDecisionTone(decision)}>{decision}</s-banner>
           ) : (
