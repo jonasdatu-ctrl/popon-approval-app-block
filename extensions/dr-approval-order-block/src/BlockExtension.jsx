@@ -12,7 +12,7 @@ export default async () => {
 
   function Extension() {
     const { data, i18n } = shopify;
-    const orderId = data.selected[0].id;
+    const orderId = data.selected?.[0]?.id ?? null;
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -22,6 +22,16 @@ export default async () => {
 
     useEffect(() => {
       let cancelled = false;
+
+      if (!orderId) {
+        console.error(
+          "[dr-approval-order-block] no order id available from shopify.data.selected:",
+          data.selected
+        );
+        setErrorMessage(i18n.translate("error-loading"));
+        setLoading(false);
+        return;
+      }
 
       (async function loadApprovalState() {
         setLoading(true);
