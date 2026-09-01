@@ -1,3 +1,21 @@
+// A file-reference-list metafield's `references` connection only resolves
+// entries whose underlying file still exists - Shopify does not cascade-
+// delete a metafield's stored GIDs when the referenced file is removed, so
+// a stale/dangling reference silently drops out of `references` while
+// `value` (the raw GID list) still shows it. Checking `value` too avoids
+// treating that stale-reference case as "no photo".
+function metafieldHasContent(metafield) {
+  if (!metafield) return false;
+  if ((metafield.references?.edges ?? []).length > 0) return true;
+  if (!metafield.value) return false;
+  try {
+    const parsed = JSON.parse(metafield.value);
+    return Array.isArray(parsed) ? parsed.length > 0 : Boolean(parsed);
+  } catch {
+    return true;
+  }
+}
+
 async function graphqlRequest(query, variables) {
   const response = await fetch("shopify:admin/api/graphql.json", {
     method: "POST",
@@ -16,14 +34,16 @@ async function graphqlRequest(query, variables) {
   return body.data;
 }
 
-// Reads custom.smile_photo (presence only, via references) and
-// custom.dr_approval_decision in one round trip.
+// Reads custom.smile_photo (presence via references, falling back to value
+// for stale/dangling references) and custom.dr_approval_decision in one
+// round trip.
 export async function fetchOrderApprovalState(orderId) {
   const data = await graphqlRequest(
     `#graphql
     query DrApprovalOrderState($id: ID!) {
       order(id: $id) {
         smilePhoto: metafield(namespace: "custom", key: "smile_photo") {
+          value
           references(first: 1) {
             edges {
               cursor
@@ -38,10 +58,13 @@ export async function fetchOrderApprovalState(orderId) {
     { id: orderId }
   );
 
-  const photoEdges = data?.order?.smilePhoto?.references?.edges ?? [];
+  if (!data?.order) {
+    throw new Error(`Order not found or inaccessible for id ${orderId}`);
+  }
+
   return {
-    hasSmilePhoto: photoEdges.length > 0,
-    decision: data?.order?.decision?.value ?? null,
+    hasSmilePhoto: metafieldHasContent(data.order.smilePhoto),
+    decision: data.order.decision?.value ?? null,
   };
 }
 
