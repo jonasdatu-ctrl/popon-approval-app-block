@@ -4,5 +4,9 @@
   "reject-button": "Reject",
   "loading": "Loading approval status…",
   "error-loading": "Unable to load approval status for this order.",
-  "error-submitting": "Something went wrong recording the decision. Please try again."
+  "error-submitting": "Something went wrong recording the decision. Please try again.",
+  "no-smile-photo-banner": "Smile Photos are required before a Dr. can Approve/Reject",
+  "reject-reason-label": "Reject Reason",
+  "back-button": "Back",
+  "reject-confirm-button": "Reject"
 }

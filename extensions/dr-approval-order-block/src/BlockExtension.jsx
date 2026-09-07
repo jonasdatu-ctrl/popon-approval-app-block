@@ -5,7 +5,7 @@ import {
   fetchCurrentStaffMemberName,
   setApprovalDecision,
 } from "./graphql";
-import { resolveDecisionTone, buildDecisionSentence } from "./decision";
+import { resolveDecisionTone, buildDecisionSentence, appendReason } from "./decision";
 
 export default async () => {
   render(<Extension />, document.body);
@@ -19,6 +19,8 @@ export default async () => {
     const [hasSmilePhoto, setHasSmilePhoto] = useState(false);
     const [decision, setDecision] = useState(/** @type {string | null} */ (null));
     const [errorMessage, setErrorMessage] = useState(/** @type {string | null} */ (null));
+    const [step, setStep] = useState(/** @type {"buttons" | "reject-reason"} */ ("buttons"));
+    const [rejectReason, setRejectReason] = useState("");
 
     useEffect(() => {
       let cancelled = false;
@@ -55,12 +57,14 @@ export default async () => {
     }, [orderId]);
 
     const recordDecision = useCallback(
-      async (actionKey) => {
+      async (actionKey, reason) => {
         setSubmitting(true);
         setErrorMessage(null);
         try {
           const staffName = await fetchCurrentStaffMemberName();
-          const sentence = buildDecisionSentence(actionKey, staffName, new Date());
+          const baseSentence = buildDecisionSentence(actionKey, staffName, new Date());
+          const sentence =
+            actionKey === "Rejected" ? appendReason(baseSentence, reason) : baseSentence;
           await setApprovalDecision(orderId, sentence);
           setDecision(sentence);
         } catch (error) {
@@ -71,6 +75,11 @@ export default async () => {
       },
       [orderId]
     );
+
+    const handleBack = useCallback(() => {
+      setRejectReason("");
+      setStep("buttons");
+    }, []);
 
     if (loading) {
       return (
@@ -89,7 +98,11 @@ export default async () => {
     }
 
     if (!hasSmilePhoto) {
-      return null;
+      return (
+        <s-admin-block heading={i18n.translate("name")}>
+          <s-banner tone="info">{i18n.translate("no-smile-photo-banner")}</s-banner>
+        </s-admin-block>
+      );
     }
 
     return (
@@ -97,6 +110,27 @@ export default async () => {
         <s-stack direction="block" gap="base">
           {decision ? (
             <s-banner tone={resolveDecisionTone(decision)}>{decision}</s-banner>
+          ) : step === "reject-reason" ? (
+            <s-stack direction="block" gap="base">
+              <s-text-field
+                label={i18n.translate("reject-reason-label")}
+                value={rejectReason}
+                disabled={submitting}
+                onInput={(event) => setRejectReason(event.currentTarget.value)}
+              />
+              <s-stack direction="inline" gap="base">
+                <s-button disabled={submitting} onClick={handleBack}>
+                  {i18n.translate("back-button")}
+                </s-button>
+                <s-button
+                  tone="critical"
+                  disabled={submitting || rejectReason.trim().length === 0}
+                  onClick={() => recordDecision("Rejected", rejectReason.trim())}
+                >
+                  {i18n.translate("reject-confirm-button")}
+                </s-button>
+              </s-stack>
+            </s-stack>
           ) : (
             <s-stack direction="inline" gap="base">
               <s-button
@@ -109,7 +143,7 @@ export default async () => {
               <s-button
                 tone="critical"
                 disabled={submitting}
-                onClick={() => recordDecision("Rejected")}
+                onClick={() => setStep("reject-reason")}
               >
                 {i18n.translate("reject-button")}
               </s-button>

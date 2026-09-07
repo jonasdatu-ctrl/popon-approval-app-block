@@ -26,6 +26,10 @@ export function buildDecisionSentence(actionKey, staffName, timestamp) {
   return `${action.verb} by ${staffName} on ${formattedTimestamp}`;
 }
 
+export function appendReason(sentence, reason) {
+  return reason ? `${sentence}. Reason: ${reason}` : sentence;
+}
+
 export function resolveDecisionTone(decisionSentence) {
   const leadingVerb = decisionSentence.trim().split(" ")[0];
   const match = Object.values(DECISION_ACTIONS).find(
